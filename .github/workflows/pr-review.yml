@@ -21,7 +21,7 @@ on:
     types: [opened, synchronize]
 
 env:
-  REVIEW_AGENT: codex   # claude | codex
+  REVIEW_AGENT: claude   # claude | codex
 
 jobs:
   review:
