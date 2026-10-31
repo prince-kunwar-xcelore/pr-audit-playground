@@ -58,7 +58,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: prince-kunwar-xcelore/pr-audit
-          ref: 1d62c82dcf1b2c33510602a1029426a5177a54f0  # pin: pr-audit agentic-review (test) (bump: scripts/pin-review-tools.sh in agent-gateway)
+          ref: 0fdf9e1677d32707ddfa5ae59ff8856ae112edaa  # pin: pr-audit agentic-review (test) (bump: scripts/pin-review-tools.sh in agent-gateway)
           path: _pr-audit
 
       - name: Install pr-audit deps
