@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
-      contents: read
+      contents: write   # test: lets GITHUB_TOKEN resolve review threads
       checks: write     # neutral "AI review" check when the agent's usage limit is hit
       id-token: write   # lets the job request an OIDC token for the proxy allowlist
 
@@ -58,7 +58,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: prince-kunwar-xcelore/pr-audit
-          ref: 0fdf9e1677d32707ddfa5ae59ff8856ae112edaa  # pin: pr-audit agentic-review (test) (bump: scripts/pin-review-tools.sh in agent-gateway)
+          ref: 870248a75a56f9ec30324614e365a9dc48449935  # pin: pr-audit agentic-review (test) (bump: scripts/pin-review-tools.sh in agent-gateway)
           path: _pr-audit
 
       - name: Install pr-audit deps
