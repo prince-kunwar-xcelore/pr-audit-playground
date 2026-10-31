@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
-      contents: write   # test: lets GITHUB_TOKEN resolve review threads
+      contents: read
       checks: write     # neutral "AI review" check when the agent's usage limit is hit
       id-token: write   # lets the job request an OIDC token for the proxy allowlist
 
@@ -43,7 +43,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: prince-kunwar-xcelore/agent-gateway
-          ref: 93ef8e5fe91ebd422dc25e6d2b3a931f8c61bfd9  # pin: agent-gateway main (bump: scripts/pin-review-tools.sh in agent-gateway)
+          ref: b52daf93f551c275119f2927f7fff4a7a830043c  # pin: agent-gateway main (bump: scripts/pin-review-tools.sh in agent-gateway)
           path: _agent-gateway
 
       - name: Setup Bun
@@ -58,11 +58,16 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: prince-kunwar-xcelore/pr-audit
-          ref: 870248a75a56f9ec30324614e365a9dc48449935  # pin: pr-audit agentic-review (test) (bump: scripts/pin-review-tools.sh in agent-gateway)
+          ref: 3361188583fd65e829e747dedcb6c8a855c94650  # pin: pr-audit main (bump: scripts/pin-review-tools.sh in agent-gateway)
           path: _pr-audit
 
       - name: Install pr-audit deps
         run: cd _pr-audit && bun install
+
+      # Codex reads files through its bubblewrap sandbox, which Ubuntu 24.04 runners block by default
+      - name: Allow the Codex sandbox
+        if: env.REVIEW_AGENT == 'codex'
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
 
       - name: Install agent CLI
         run: |
@@ -70,15 +75,6 @@ jobs:
             claude) bun install -g @anthropic-ai/claude-code ;;
             codex)  bun install -g @openai/codex ;;
           esac
-
-      - name: Probe codex sandbox (test)
-        if: env.REVIEW_AGENT == 'codex'
-        run: |
-          cd "$GITHUB_WORKSPACE"
-          sysctl kernel.apparmor_restrict_unprivileged_userns || true
-          codex sandbox -- git log -1 --oneline && echo "SANDBOX OK" || echo "SANDBOX FAILED"
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-          codex sandbox -- git log -1 --oneline && echo "SANDBOX OK AFTER SYSCTL" || echo "SANDBOX STILL FAILED"
 
       # Credentials go to a 0600 file and are masked: never on a command line, never in the log.
       # If decrypt-token fails, the job stops here with its real error.
