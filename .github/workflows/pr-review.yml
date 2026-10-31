@@ -58,7 +58,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: prince-kunwar-xcelore/pr-audit
-          ref: c461d12b9f6fe94e079d296413151a5fe2ff7a45  # pin: pr-audit agentic-review (test) (bump: scripts/pin-review-tools.sh in agent-gateway)
+          ref: 1d62c82dcf1b2c33510602a1029426a5177a54f0  # pin: pr-audit agentic-review (test) (bump: scripts/pin-review-tools.sh in agent-gateway)
           path: _pr-audit
 
       - name: Install pr-audit deps
@@ -70,6 +70,15 @@ jobs:
             claude) bun install -g @anthropic-ai/claude-code ;;
             codex)  bun install -g @openai/codex ;;
           esac
+
+      - name: Probe codex sandbox (test)
+        if: env.REVIEW_AGENT == 'codex'
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          sysctl kernel.apparmor_restrict_unprivileged_userns || true
+          codex sandbox -- git log -1 --oneline && echo "SANDBOX OK" || echo "SANDBOX FAILED"
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          codex sandbox -- git log -1 --oneline && echo "SANDBOX OK AFTER SYSCTL" || echo "SANDBOX STILL FAILED"
 
       # Credentials go to a 0600 file and are masked: never on a command line, never in the log.
       # If decrypt-token fails, the job stops here with its real error.
